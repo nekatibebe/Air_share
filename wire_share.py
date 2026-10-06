@@ -13,59 +13,45 @@ import time
 import tkinter as tk
 from tkinter import filedialog
 from flask import Flask, request, render_template_string, send_from_directory, abort, make_response, redirect
-
-# Cryptography primitives for generating the on-the-fly self-signed TLS certificate
+# Cryptography primitives to generate the self-signed TLS certificate
 from cryptography import x509
 from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 import datetime
-
-# 📁 INITIAL GRAPHICAL FOLDER SELECTION
+# INITIALLY THE HOST SELECTS THE FOLDER HE WANTS TO SHARE
 root = tk.Tk()
 root.withdraw()
-
-print("📂 [CONFIG] Please select the BASE folder you wish to securely share...")
+print("Please select the BASE folder you want to share...")
 BASE_DIR = filedialog.askdirectory(title="Select Secure Base Share Folder")
-
 if not BASE_DIR:
     print("❌ [CRITICAL] No folder selected. Exiting server.")
     sys.exit()
-
-print(f"✅ [SECURE SYSTEM] Isolation barrier locked around: {BASE_DIR}")
-
+print(f"Isolation barrier locked around: {BASE_DIR}")
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)
-
-# Administrative credentials for local network authentication
-AUTH_USER = "admin"
-AUTH_PASS = "cybersecurity2026"
-
+# CREDENTIALS OF THE USER TO AUTHENTICATE
+AUTH_USER = "Feleke"
+AUTH_PASS = "Feleke@123"
 # SECURITY STATE DATABASES (In-Memory RAM Tables)
 active_sessions = {} 
 SESSION_TIMEOUT = 600   # 10 Minutes in seconds
 rate_limit_records = {} # Format: { ip: [timestamp1, timestamp2, ...] }
-
-# 🛡️ DEFENSIVE PILLAR 1: IP-BASED RATE LIMITING ENGINE
+# IP-BASED RATE LIMITING ENGINE
 # This stops GoBuster fuzzing and password brute-forcing at the routing layer
 def is_rate_limited(ip_address, max_requests=10, window_seconds=60):
     current_time = time.time()
-    
     if ip_address not in rate_limit_records:
         rate_limit_records[ip_address] = [current_time]
         return False
-        
     # Sliding window filter: Remove requests older than the time window
     timestamps = rate_limit_records[ip_address]
     rate_limit_records[ip_address] = [t for t in timestamps if current_time - t < window_seconds]
-    
     if len(rate_limit_records[ip_address]) >= max_requests:
         return True
-        
     rate_limit_records[ip_address].append(current_time)
     return False
-
-# 🎨 HARDENED HTML LAYOUTS (Login Page and Document Explorer)
+#HARDENED HTML LAYOUTS (Login Page and Document Explorer)
 LOGIN_PAGE = """
 <!DOCTYPE html>
 <html>
@@ -160,63 +146,50 @@ EXPLORER_PAGE = """
 </body>
 </html>
 """
-
 # 🛡️ INTERCEPT AND APPLY GLOBAL RATE LIMITS BEFORE PROCESSING REQUESTS
 @app.before_request
 def global_rate_limiting_gate():
     client_ip = request.remote_addr
-    
     # Severe limit configuration on sensitive authentication paths to kill brute-forces
     if request.path == '/login' and request.method == 'POST':
         if is_rate_limited(client_ip, max_requests=5, window_seconds=60):
             print(f"🛑 [RATE LIMIT TRIGGERED] Brute-force block executed against IP: {client_ip}")
             return abort(429, "Too Many Login Attempts. Throttling request for 60 seconds.")
-            
     # Standard limit configuration for overall asset/route fuzzing (GoBuster protection)
     else:
         if is_rate_limited(client_ip, max_requests=45, window_seconds=60):
             print(f"🛑 [RATE LIMIT TRIGGERED] Content enumeration block executed against IP: {client_ip}")
             return abort(429, "Rate limit exceeded. Automated scanning signatures detected.")
-
-# 🛡️ INPUT VALIDATION & PATH TRAVERSAL MITIGATION
+#  INPUT VALIDATION & PATH TRAVERSAL MITIGATION
 def secure_target_path(rel_path):
     base_norm = os.path.normpath(BASE_DIR)
     target_norm = os.path.normpath(os.path.join(base_norm, rel_path))
-    
     if not target_norm.startswith(base_norm):
         print(f"🚨 [ALERT] PATH TRAVERSAL ATTEMPT BLOCKED: Client tried escaping to {target_norm}")
         abort(403, "Security Violation: Directory Traversal Prohibited.")
     return target_norm
-
-# 🛡️ AUTOMATED SESSION EXPIRATION VERIFIER
+# AUTOMATED SESSION EXPIRATION VERIFIER
 def verify_session():
     token = request.cookies.get('session_id')
     if not token or token not in active_sessions:
         return False
-        
     session_data = active_sessions[token]
     current_time = time.time()
-    
     if current_time - session_data['last_activity'] > SESSION_TIMEOUT:
         print(f"⏱️ [SECURITY] Session token {token[:8]}... expired due to timeout rules.")
         active_sessions.pop(token, None)
         return False
-        
     session_data['last_activity'] = current_time
     return True
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         user = request.form.get('username')
         passwd = request.form.get('password')
-        
         if user == AUTH_USER and passwd == AUTH_PASS:
             token = secrets.token_hex(16)
             active_sessions[token] = {'username': user, 'last_activity': time.time()}
-            
             print(f"🔑 [AUTH SUCCESS] Session issued for active token: {token[:8]}...")
-            
             response = make_response(redirect('/'))
             response.set_cookie('session_id', token, httponly=True, samesite='Strict', secure=True)
             return response
@@ -224,7 +197,6 @@ def login():
             print(f"⚠️ [AUTH FAILURE] Invalid login attempt with username: '{user}' from IP: {request.remote_addr}")
             return render_template_string(LOGIN_PAGE, error="Invalid Username or Password")
     return render_template_string(LOGIN_PAGE,error=None)
-
 @app.route('/logout')
 def logout():
     token = request.cookies.get('session_id')
@@ -237,20 +209,16 @@ def logout():
 def home():
     if not verify_session():
         return redirect('/login')
-
     rel_path = request.args.get('path', '').strip('/')
     if rel_path:
         rel_path += '/'
-
     target_dir = secure_target_path(rel_path)
     if not os.path.exists(target_dir):
         return "Target node directory missing.", 404
-
     parent_path = ''
     parts = rel_path.strip('/').split('/') if rel_path else []
     if len(parts) > 1:
         parent_path = '/'.join(parts[:-1]) + '/'
-
     all_items = os.listdir(target_dir)
     folders = []
     files = []
@@ -260,7 +228,6 @@ def home():
             folders.append(item)
         elif os.path.isfile(full_item_path):
             files.append(item)
-
     folders.sort()
     files.sort()
     return render_template_string(
@@ -282,7 +249,6 @@ def upload():
     file.save(os.path.join(target_dir, filename))
     print(f"🔒 [AUDIT] Inbound upload stream saved into filesystem sandbox: {filename}")
     return f'alert("Secure file uploaded!"); window.location="/?path={rel_path}";'
-
 @app.route('/view/<path:filepath>')
 def view_file(filepath):
     if not verify_session():
@@ -292,7 +258,6 @@ def view_file(filepath):
         return "Target component not found.", 404
     return send_from_directory(os.path.dirname(target_file), os.path.basename(target_file),
                                mimetype=mimetypes.guess_type(target_file)[0])
-
 @app.route('/download/<path:filepath>')
 def download_file(filepath):
     if not verify_session():
@@ -302,14 +267,12 @@ def download_file(filepath):
         return "Target entry missing.", 404
     return send_from_directory(os.path.dirname(target_file), os.path.basename(target_file),
                                as_attachment=True)
-
 def generate_self_signed_cert(ca_path='ca.pem', ca_key_path='ca_key.pem', cert_path='cert.pem', key_path='key.pem'):
     """Generate a local CA (if missing) and a server certificate signed by that CA.
     Saves: ca.pem, ca_key.pem, cert.pem, key.pem. Returns (ca_created:bool, ca_path:str).
     """
     ca_created = False
     local_ip = get_local_ip()
-
     # Load existing CA if present
     if os.path.exists(ca_path) and os.path.exists(ca_key_path):
         with open(ca_key_path, 'rb') as f:
@@ -391,7 +354,6 @@ def generate_self_signed_cert(ca_path='ca.pem', ca_key_path='ca_key.pem', cert_p
         .add_extension(x509.BasicConstraints(ca=False, path_length=None), critical=True)
         .sign(ca_private_key, hashes.SHA256())
     )
-
     with open(cert_path, 'wb') as f:
         f.write(server_cert.public_bytes(serialization.Encoding.PEM))
     with open(key_path, 'wb') as f:
@@ -399,9 +361,7 @@ def generate_self_signed_cert(ca_path='ca.pem', ca_key_path='ca_key.pem', cert_p
                                          serialization.PrivateFormat.TraditionalOpenSSL,
                                          serialization.NoEncryption()))
     os.chmod(key_path, 0o600)
-
     return ca_created, ca_path
-
 def get_local_ip():
     # Let the routing table choose the LAN interface instead of selecting the
     # first non-loopback address (which may be a VPN, tether, or container).
@@ -429,7 +389,6 @@ def get_local_ip():
                 continue
             priority = 0 if any(tag in interface_name.lower() for tag in preferred) else 1
             candidates.append((priority, addr.address))
-
     if candidates:
         candidates.sort()
         return candidates[0][1]
@@ -440,7 +399,6 @@ def publish_local_hostname(local_ip):
     if not publisher:
         print("⚠️ [mDNS] avahi-publish-address is unavailable; use the IP address instead.")
         return False
-
     process = subprocess.Popen(
         [publisher, "--no-reverse", "-a", "airshare.local", local_ip],
         stdout=subprocess.DEVNULL,
@@ -460,12 +418,9 @@ def publish_local_hostname(local_ip):
         except subprocess.TimeoutExpired:
             process.kill()
             process.wait()
-
     atexit.register(stop_publisher)
     print("✅ [mDNS] Published airshare.local on the local network.")
     return True
-
-
 def print_ca_install_instructions(ca_path):
     """Print platform-specific instructions to trust the generated CA certificate."""
     abs_path = os.path.abspath(ca_path)
@@ -481,14 +436,11 @@ def print_ca_install_instructions(ca_path):
     print("Firefox (per-profile): Open Preferences → Privacy & Security → View Certificates → Authorities → Import and select the CA file and trust it for websites.")
     print("Alternatively, use mkcert (https://github.com/FiloSottile/mkcert) to automate creating and trusting local certificates.")
     print("=====================================================================\n")
-
-
 def insure_avahi_running():
     # check if avahi daemon is installed
     if not shutil.which("avahi-daemon"):
         print("[mDNS Warning] avahi daemon is not installed on this system.")
         return False
-
     # check if the daemon is currently active
     status_check = subprocess.run(
         ["systemctl", "is-active", "--quiet", "avahi-daemon"],
@@ -498,7 +450,6 @@ def insure_avahi_running():
     if status_check.returncode == 0:
         print("[mDNS] avahi-daemon is already running.")
         return True
-
     # Attempt to start the service
     print("[mDNS] Starting avahi daemon ...")
     try:
@@ -508,8 +459,6 @@ def insure_avahi_running():
     except subprocess.CalledProcessError:
         print("[mDNS Error] Failed to start avahi-daemon. Ensure you run with root privileges.")
         return False
-
-
 if __name__ == '__main__':
     local_ip = get_local_ip()
     target_port = 9090
