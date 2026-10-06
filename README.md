@@ -1,3 +1,81 @@
+## The real world problem i face and Need of developing Secured, offline, high-speed API based file Sharing tool
+### 1,Internet dependency and High latency:
+Sharing files often requires an active internet connection leading unnecessary slow transfer speeds, and heavy data consumption.
+### 2,Storage limitation on mobile devices:
+Managing large file directory on phones with limited storage requires a seamless way to preview and access files hosted on a PC without downloading them first
+### 3, Privacy and network security risks:
+Transmitting sensitive local data over public or cloud infrastructure exposes files to third-party interception and data leakage.
+### 4, Lack of hardened local tools:
+Existing offline utilities lack built-in security features like rate-limiting, encrypted transport, and input validation, and these types of security measures.
+### 5,Data exposure over plain text protocols:
+Traditional local file transfers(e.g HTTP, FTP, or unencrypted SMB) send data in clear text, making them vulnerable to packet sniffing and man-in-middle attack on shared WIFI networks.
+## The proposed solutions for the tool
+### 1, 100% Offline peer-to-peer Networks:
+Operates over a local WIFI/Hotspot architecture without requiring active internet access.
+### 2,High-Speed Transfer rates:
+Achieves rapid local transfer speeds ranging from 5MB/S to 8MB/S, eliminating internet latency and bandwidth costs.
+### 3, RSA-Based Encrypted Tunneling:
+Utilizes RSA asymmetric encryption primitives to establish a secure, encrypted communication channel between host and clients.
+### 4, Automated PKI and CA certificate Generation:
+Programmatically generates on-the-fly CA Certificates and TLS keys, automatically configuring secure HTTPS connections for connected clients.
+## Defensive security pillars and system Hardening
+### 1, Zero-configuration mDNS Resolution:
+Integrated mDNS/Avahi naming allowing clients to connect
+via friendly hostnames(e.g .local domain) instead of typing new ip addresses.
+### 2, IP based Sliding window rate limiter: 
+Tracks incoming client request timestamps inside a rolling 60 second
+window to block automated attack vectors.
+### 3,Privileged Execution Safeguards:
+Requires sudo authentication at startup to bind low-level system
+networking services safely.
+### 4,Authentication Gatekeeper: 
+Features a dedicated login gateway to authenticate clients before granting file-
+system access or download capabilities.
+### 5,Path Traversal Isolation: 
+Enforces strict path normalization(secure_target_path) to lock clients inside specified
+host directories, preventing directory traversal attacks(../).
+### 6,In-memory RAM state Databases: 
+Stores active states and request metadata directly in volatile memory for
+ultra-fast security processing without database overhead.
+## System Architecture and workflow diagram
+### 1, Network Initialization:
+Host creates a local WI-FI Hotspot, and client devices connect directly without external internet access.
+### 2, Host application setup:
+Host launces the server; a GUI(Tkinter) promotes the host to select the target shared
+directory.
+### 3, Service discovery and sudo binding: 
+Request sudo privileges to initialize avahi-daemon for mDNS resolution,
+matching the local ip address to .local domain name.
+### 4, Secure client connection and Auth:
+Displays a connection link for clients; clients install/trust the host’s CA certificate in their browser and access the HTTPS portal.
+### 5, Access and storage operations:
+Clients pass the login gateway to access the shared folder to stream, preview,download, or upload files securely within host-granted boundaries.
+## Target use cases:Who needs this Tool?
+### Healthcare institutions and Hospitals:
+Enables doctors, radiologists, and administrative staff
+to securely and medical imaging files(e.g X-rays, MRI scans) across departments without sending data over external networks.
+### Banking and Financial Institutions: 
+Facilitates high-security inter-office document sharing between
+teller desks and management terminals while maintaining zero exposure to public cloud leaks or internet-based sniffing.
+### Corporate Office Networks:
+Allows inter-office computer to computer file exchange without overloading office
+internet bandwidth, ensuring business documents remain strictly within local office premises.
+### Air-Gapped and High-security Environments(e.g military comand posts, hospital MRI labs, banking vault): 
+provides secure, offline file transfer for organization-critical operations where external internet connections
+are restricted for compliance and privacy.
+
+## Future enhancements and Scaling Roadmap
+### Dynamic user Management and secure Auth:
+Replace static credentials with a full sign-up/sign-in user registration system, storing hashed
+passwords securely in a database(e.g., SQLite/PostgreSQL with bcrypt).
+### Mesh Network Topology:
+transition from a single Hotspot/Access Point model to a peer-to-peer Mesh Topology, extending file-sharing
+coverage across unlimited geographical distances
+through multi-hop node relaying.
+### MIME/Byte-Level File Inspection:
+Upgrade upload verification by inspecting ra
+### Making it more user friendly:
+
 # 🛡️ AirShare: Hardened, Zero-Internet Local File Vault
 
 An offline, defense-in-depth local file-sharing server engineered to operate securely over Local Area Networks (LAN) and Wireless Access Points (Hotspots) without an internet connection.
