@@ -13,6 +13,8 @@ Traditional local file transfers(e.g HTTP, FTP, or unencrypted SMB) send data in
 ### 1, 100% Offline peer-to-peer Networks:
 Operates over a local WIFI/Hotspot architecture without requiring active internet access.
 ### 2,High-Speed Transfer rates:
+<img width="1062" height="1131" alt="Screenshot_20261007_211516_Chrome" src="https://github.com/user-attachments/assets/d65173a8-1d9b-47bd-a0a4-ab3684e75f0d" />
+
 Achieves rapid local transfer speeds ranging from 5MB/S to 8MB/S, eliminating internet latency and bandwidth costs.
 ### 3, RSA-Based Encrypted Tunneling:
 Utilizes RSA asymmetric encryption primitives to establish a secure, encrypted communication channel between host and clients.
@@ -23,6 +25,8 @@ Programmatically generates on-the-fly CA Certificates and TLS keys, automaticall
 Integrated mDNS/Avahi naming allowing clients to connect
 via friendly hostnames(e.g .local domain) instead of typing new ip addresses.
 ### 2, IP based Sliding window rate limiter: 
+![Uploading Screenshot_20261007_211238_Chrome.jpg…]()
+
 Tracks incoming client request timestamps inside a rolling 60 second
 window to block automated attack vectors.
 ### 3,Privileged Execution Safeguards:
