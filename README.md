@@ -25,17 +25,25 @@ Programmatically generates on-the-fly CA Certificates and TLS keys, automaticall
 Integrated mDNS/Avahi naming allowing clients to connect
 via friendly hostnames(e.g .local domain) instead of typing new ip addresses.
 ### 2, IP based Sliding window rate limiter: 
-![Uploading Screenshot_20261007_211238_Chrome.jpg…]()
+<img width="1079" height="393" alt="Screenshot_20261007_211238_Chrome" src="https://github.com/user-attachments/assets/c5b8c1d4-eeb1-47ed-ba42-a2cb1bbaf865" />
+
 
 Tracks incoming client request timestamps inside a rolling 60 second
 window to block automated attack vectors.
+<img width="1092" height="180" alt="Screenshot_2026-10-07_21-12-47" src="https://github.com/user-attachments/assets/a0e21616-5fe0-4ebc-a7e0-1099d9f626a6" />
+
 ### 3,Privileged Execution Safeguards:
+<img width="770" height="180" alt="Screenshot_2026-10-07_21-08-44" src="https://github.com/user-attachments/assets/35659885-98f6-4791-8842-c5ff50b028df" />
+
 Requires sudo authentication at startup to bind low-level system
 networking services safely.
 ### 4,Authentication Gatekeeper: 
+<img width="591" height="1280" alt="image" src="https://github.com/user-attachments/assets/5b4c6936-4b09-4a39-8021-3c80bb1a38b0" />
+
 Features a dedicated login gateway to authenticate clients before granting file-
 system access or download capabilities.
 ### 5,Path Traversal Isolation: 
+<img width="1079" height="367" alt="image" src="https://github.com/user-attachments/assets/c1254977-d918-4f64-8ff4-869ef54e1ab1" />
 Enforces strict path normalization(secure_target_path) to lock clients inside specified
 host directories, preventing directory traversal attacks(../).
 ### 6,In-memory RAM state Databases: 
