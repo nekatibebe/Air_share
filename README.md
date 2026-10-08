@@ -17,6 +17,48 @@ From an adversary's perspective, this creates an ideal exploit environment. The 
 
 Without encryption, all data packets travel through the air as cleartext radio waves. Anyone running a passive monitor tool can capture files, intercept configuration arguments, and harvest active session data straight out of the air.
 ### 1.2 Architectural Constraints of Zero-Internet Environments
+
+Building a secure tool under strict zero-internet constraints changes how you write software. You can no longer make simple API calls to third-party web services or rely on external packages that fetch updates over the net.
+
+The application must be completely self-sufficient. This constraint means your code cannot connect to cloud engines to process user profiles, meaning authentication states must be generated and managed directly on the local machine.
+
+Furthermore, you cannot rely on persistent, heavy external database engines like MySQL or PostgreSQL, which introduce installation overhead and expose the application to complex query injection risks. The system must operate efficiently using only a lightweight, minimal software footprint.
+
+Every single security control—including tracking requests for rate limiting, verifying session states, and generating cryptographic keys—must happen completely inside volatile system memory (RAM). This isolation creates a rigid boundary: the application must act as its own security firewall, its own Certificate Authority, and its own real-time logging monitor, all while running on a device entirely cut off from the rest of the world.
+
+### 1.3 Project Core Engineering Requirements
+
+The AirShare Secure Node project was built to address these specific vulnerabilities by engineering a secure, self-contained file vault. It replaces the open, unencrypted design of standard file-sharing tools with a strict Zero-Trust paradigm. The application treats every connected client device as a potential threat until it proves its identity.
+The primary technical requirements for this project include:
+
+                  ┌──► 1. Transport Layer Security (In-Memory X.509 CA Signing)
+                  ├──► 2. Local Namespace Discovery (Avahi mDNS System Engine)
+[ AirShare Core ] ├──► 3. Identity Ingress Barriers (Secure Anti-XSS Login Gates)
+                  ├──► 4. Anti-Scanning Firewalls (Sliding-Window Rate Limiting)
+                  └──► 5. System Directory Isolation (Canonical Bound Jail)
+1, Transport Layer Security: The tool must instantly encrypt all data over the local network using dynamically generated cryptographic keys, preventing anyone from sniffing packets over the air.
+
+2, Local Namespace Discovery: It must publish a clean, easy-to-use local domain name without internet connection, removing the need for users to type long, confusing IP addresses.
+
+3, Identity Ingress Barriers: The app must force client devices through a secure login screen, blocking unauthorized users from seeing the folder structure or files.
+4, Anti-Scanning Firewalls: It must feature a built-in network throttle to block automated scanning tools (like GoBuster) and automated password crackers.
+
+5, System Directory Isolation: The tool must use native file system hooks to let the host pick any directory to share at runtime, securely isolating the rest of the computer's hard drive from client access.
+# 2: THREAT MODELING & DEEP ATTACK SURFACE DECONSTRUCTION
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <img width="1062" height="1131" alt="Screenshot_20261007_211516_Chrome" src="https://github.com/user-attachments/assets/d65173a8-1d9b-47bd-a0a4-ab3684e75f0d" />
 
 Achieves rapid local transfer speeds ranging from 5MB/S to 8MB/S, eliminating internet latency and bandwidth costs.
