@@ -126,6 +126,30 @@ The root.withdraw() line hides the tiny default Tkinter background window, while
 
 The selected folder string is locked into a global constant variable (BASE_DIR), which acts as the absolute sandbox root boundary for all future file actions.
  ### 3.3 Multicast DNS (mDNS) & Local Hostname Publishing Mechanics
+ Forcing users to type a raw local IP address (like https://192.168.137.251:9090) into their phone browser creates a clunky and difficult user experience. To fix this completely offline, the application uses Multicast DNS (mDNS), the underlying protocol behind Apple's Bonjour and Linux's Avahi systems.
+
+ The script handles this local discovery mapping by launching an asynchronous background process that hooks straight into Linux's native Avahi daemon tool:
+
+    python
+    subprocess.Popen(["avahi-publish-address", "--no-reverse", "-a", "airshare.local", local_ip])
+ The ensure_avahi_running() function uses system commands (systemctl is-active) to verify that the Avahi service is running on your system. If it is stopped, it automatically attempts to start it.
+
+ Once verified, publish_local_hostname() spins up the avahi-publish-address process. This background daemon answers local network discoveries by broadcasting UDP packets across port 5353.
+
+ When a phone browser asks, "Who owns the domain airshare.local?", your laptop's Avahi service intercepts the multicast packet and responds, "That domain belongs to my wireless card IP address." This allows users to connect to your file portal completely offline simply by typing https://airshare.local:9090 into their browsers.
+ # 4: CRYPTOGRAPHIC ENGINEERING & PRIVATE CA ARCHITECTURE
+ ### 4.1 Dual-Tier In-Memory Public Key Infrastructure (PKI)
+
+ The core transport security of this project uses a custom, local Public Key Infrastructure (PKI) built directly into the initialization block using the Python cryptography library.
+
+ Standard self-signed certificates generate a single temporary certificate for the server. However, modern smartphone browsers reject these basic standalone certificates, triggering security errors that can block the connection entirely.
+
+ To solve this, the application implements an advanced Dual-Tier CA Architecture:
+ 
+    [Generate Root CA ] ──► Compiles ca.private_key (4096-bit) + ca.pem Certificate
+                               │
+                               ▼
+    [ Generate Server ]  ──► Compiles server_key (2048-bit) ──► Signed by Root CA ──► TLS Active
 
 
 
