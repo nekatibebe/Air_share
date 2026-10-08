@@ -101,19 +101,7 @@ through multi-hop node relaying.
 Upgrade upload verification by inspecting ra
 ### Making it more user friendly:
 
-# 🛡️ AirShare: Hardened, Zero-Internet Local File Vault
 
-An offline, defense-in-depth local file-sharing server engineered to operate securely over Local Area Networks (LAN) and Wireless Access Points (Hotspots) without an internet connection.
-
----
- # INSA SUMMER CAMP DEPARTMENT OF CYBER SECURITY PROJECT
-SUBMITTED BY: FELEKE CHEKOLE GENETU  
-ACADEMIC YEAR: 2018 e.c
-
----
-# outlines
-1. Architectural concepts.................................................1
-2. 
 # These are main concepts 
 * Architectural concepts and assumptions
   Zero-internet operational mode: the app can't rely on external clouds,databases, or public authorities. Everything 
@@ -124,17 +112,6 @@ connecting to your WI-FI is considered a potential attacker until proven otherwi
 
 ---
 
-🖥️ Slide 1: Title Slide
-Slide Title: AirShare: Engineering a Hardened,
-Zero-Internet Local File Vault
-Subtitle: An Offline, Defense-in-Depth 
-Storage Node for Hostile Networks
-Presenter Information:Feleke Chekole 
-Cybersecurity & Networking
-INSA summer camp Project
-Visual Anchor Ideas: Icon of a locked shield overlapping a Wi-Fi broadcasting antenna.
-
----
 
 🖥️ Slide 2: Project Scope & Problem 
 Statement
