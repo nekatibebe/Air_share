@@ -167,8 +167,101 @@ The selected folder string is locked into a global constant variable (BASE_DIR),
  Setting key_cert_sign=True gives the CA permission to sign server certificates, while crl_sign=True allows it to sign certificate revocation lists.
 
  The Root CA's validity dates are set to a 10-year window (days=3650), while the downstream server certificate is set to a 1-year expiration window (days=365). Finally, the certificates are signed using a secure SHA-256 cryptographic hash.
+### 4.3 Subject Alternative Name (SAN) Mapping for Offline Hosts
 
+A common reason browsers reject local certificates is a mismatch between the domain name typed into the address bar and the domain identity listed inside the certificate. Modern security standards require certificates to explicitly list every valid domain name and IP address using Subject Alternative Names (SAN).
 
+ The application handles this by dynamically building a SAN configuration array during startup:
+
+    python
+    san_list = [
+    x509.DNSName("airshare.local"),
+    x509.DNSName("*.airshare.local"),
+    x509.DNSName("localhost"),
+    ]
+    san_list.append(x509.IPAddress(ipaddress.ip_address(local_ip)))
+The script uses the get_local_ip() function to automatically resolve your current wireless interface IP address, converts it into a valid IP identity object, and appends it directly to the certificate's SAN array.
+
+It also adds airshare.local and localhost to the list. When a phone connects via mDNS or via the raw local IP, its browser checks this certificate array, finds a matching entry, and validates the encrypted TLS connection seamlessly.
+ # 5: THE PRODUCTION API CONTRACT & ROUTING LOGIC
+ ### 5.1 Programmatic REST Endpoints & Privilege Boundaries
+
+ The application operates as a programmatic, stateless REST API interface. It establishes clear service definitions that separate public, unauthenticated routes from protected, high-security storage areas:
+
+                         ┌──► Public Endpoints ─────► GET /login (Serve Interface)
+                         │                            POST /login (Verify & Set Cookie)
+     [ Web Traffic ] ────┤
+                         └──► Protected Endpoints ──► GET / (Inventory Map)
+                         (verify_session=True)   POST /upload (Binary Upload Pipe)
+                                                 GET /view/<file> (Inline View)
+                                                 GET /download/<file> (Forced Download)
+ The app handles this access control by checking user credentials at the root gateway. Unverified users can only load the /login endpoints.
+
+ Once they submit valid credentials, the server generates a high-entropy session ID string (secrets.token_hex(16)) and stores it in the active session table. Protected endpoints require a valid session cookie; if missing or invalid, the server immediately redirects the traffic back to the login barrier.
+ ### 5.2 Ingress Hooking, Multi-Part Stream Interception, and MIME Optimization
+ When a client device interacts with the server, the app handles the request using precise processing steps:
+
+*1. Ingress Interception via @app.before_request:* Before traffic reaches any inner endpoint code, the global_rate_limiting_gate() function grabs the request context. It checks the client's network IP using request.remote_addr and evaluates it against the active rate-limit tracking tables. If a client exceeds request thresholds, the server drops the connection instantly, returning an HTTP 429 Too Many Requests error.
+
+*2. Streaming Multipart Multi-Part Payloads via POST /upload:* When a phone uploads a file, it sends it as a chunked binary multi-part stream. The server intercepts this stream, extracts the file using request.files['my_file'], and sanitizes the filename using os.path.basename and escape() to prevent injection attacks. It then streams the raw bytes directly to your computer's hard drive:
+    
+           python
+    file.save(os.path.join(target_dir, filename))
+This data pipe processes the file payload smoothly without consuming excessive system memory.
+
+*3. MIME Content-Type Optimization via GET /view:* When a user clicks "Open" to view a file inline, the server uses Python's mimetypes library to analyze the file extension:
+
+     python
+       mime, _ = mimetypes.guess_type(target_file)
+    return send_from_directory(..., mimetype=mime)
+The script resolves the file's exact media type (e.g., image/jpeg or application/pdf) and injects it straight into the HTTP response header. This explicit MIME header tells the phone browser exactly how to process the data, allowing it to render the file natively inside a new browser tab instead of forcing a download.
+# 6: APP-LAYER DEFENSIVE ENGINEERING & THROTTLING ALGORITHMS
+### 6.1 Sliding-Window Memory-Isolated Rate Limiting Mechanics
+
+To protect the server from automated fuzzers (like GoBuster) or password brute-forcers, the application uses an inline Sliding-Window Rate Limiting algorithm built directly into the python script. This custom engine uses a rolling memory table to track requests in real time without needing complex third-party extensions:
+
+     python
+    def is_rate_limited(ip_address, max_requests=10, window_seconds=60):
+        current_time = time.time()
+       if ip_address not in rate_limit_records:
+        rate_limit_records[ip_address] = [current_time]
+        return False
+       timestamps = rate_limit_records[ip_address]
+    # Keep only requests that happened within the last 60 seconds
+    rate_limit_records[ip_address] = [t for t in timestamps if current_time - t < window_seconds]
+    if len(rate_limit_records[ip_address]) >= max_requests:
+        return True
+    rate_limit_records[ip_address].append(current_time)
+    return False
+The algorithm uses a precise processing sequence:
+
+    [Incoming Request ] ──► Fetch Client IP ──► Clean Old Logs ──► Check Array Length
+                                                                       │
+    ┌─────────────────────────── Passed/Blocked? ──────────────────────┘
+    ▼                                                                  ▼
+    [ Length >= Max ] ──► Return HTTP 429             [ Length < Max ] ──► Append Time ──► Pass
+The script configures two separate throttling profiles for different routes:
+
+*The Authentication Gateway (/login POST requests)* Restricted to 5 maximum attempts per minute. This tight constraint prevents automated brute-force tools from guessing passwords quickly.
+
+*General Content and Asset Paths:* Restricted to 45 total requests per minute. This limit instantly throttles directory discovery scanners like GoBuster, dropping connections before they can map out your folder structure.
+
+### 6.2 Canonical Normalization & Path Traversal Lockdown Controls
+
+To prevent attackers from using relative directory breakout tricks (like ../..) to access files outside the shared folder, the application enforces strict path containment controls inside the secure_target_path() function:
+
+        python
+     base_norm = os.path.normpath(BASE_DIR)
+     target_norm = os.path.normpath(os.path.join(base_norm, rel_path))
+     if not target_norm.startswith(base_norm):
+        abort(403)
+The script uses os.path.normpath to resolve paths cleanly. This function analyzes the input string and strips out relative dot references. For example, a malicious path input like /home/feleke/Share/.././../etc/passwd is resolved to its absolute location: /home/feleke/etc/passwd.
+
+The server then evaluates the path prefix rule:
+
+         python
+     target_norm.startswith(base_norm)
+This check verifies that the resolved target path still begins with the official BASE_DIR string boundary. If an input attempts to step outside this boundary, the script halts processing, prints a critical warning alert to your terminal console, and returns an HTTP 403 Forbidden error.
 
 
 
