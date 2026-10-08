@@ -22,6 +22,9 @@ Utilizes RSA asymmetric encryption primitives to establish a secure, encrypted c
 <img width="1528" height="42" alt="image" src="https://github.com/user-attachments/assets/0e9fe2b4-57f6-44d2-99fe-99208545c1ad" />
 
 Programmatically generates on-the-fly CA Certificates and TLS keys, automatically configuring secure HTTPS connections for connected clients.
+ and the client trusts and forces his device to trust
+ <img width="591" height="1280" alt="image" src="https://github.com/user-attachments/assets/8b2314bc-670a-48dc-8103-83f6e2330126" />
+
 ## Defensive security pillars and system Hardening
 ### 1, Zero-configuration mDNS Resolution:
 <img width="754" height="68" alt="Screenshot_2026-10-07_21-09-32" src="https://github.com/user-attachments/assets/10e1c8a8-a354-4fc5-aefd-cf7a1497e63e" />
@@ -50,18 +53,24 @@ system access or download capabilities.
 <img width="1079" height="367" alt="image" src="https://github.com/user-attachments/assets/c1254977-d918-4f64-8ff4-869ef54e1ab1" />
 Enforces strict path normalization(secure_target_path) to lock clients inside specified
 host directories, preventing directory traversal attacks(../).
+
 ### 6,In-memory RAM state Databases: 
 Stores active states and request metadata directly in volatile memory for
 ultra-fast security processing without database overhead.
+
 ## System Architecture and workflow diagram
 ### 1, Network Initialization:
 Host creates a local WI-FI Hotspot, and client devices connect directly without external internet access.
 ### 2, Host application setup:
 Host launces the server; a GUI(Tkinter) promotes the host to select the target shared
 directory.
+<img width="1920" height="1080" alt="Screenshot_2026-10-06_20_34_12" src="https://github.com/user-attachments/assets/aef15c56-4629-4ff0-9ccc-d1497fbc3d0f" />
+
 ### 3, Service discovery and sudo binding: 
 Request sudo privileges to initialize avahi-daemon for mDNS resolution,
 matching the local ip address to .local domain name.
+<img width="770" height="180" alt="Screenshot_2026-10-07_21-08-44" src="https://github.com/user-attachments/assets/98651c2c-9ca1-410c-aea5-65ab94cd2770" />
+
 ### 4, Secure client connection and Auth:
 Displays a connection link for clients; clients install/trust the host’s CA certificate in their browser and access the HTTPS portal.
 ### 5, Access and storage operations:
