@@ -7,6 +7,7 @@
 In the design of modern file-sharing applications, engineering teams routinely offload security, access control, and identity mapping tasks to upstream infrastructure layers. When an application operates on a corporate network or across the worldwide web, it heavily relies on foundational trust assumptions built into external systems:
 
 [ Internet File App ] ──► (Public DNS Route) ──► (Let's Encrypt CA validation) ──► (OAuth Core Server)
+
 These external abstractions include public Domain Name System (DNS) configurations for routing verification, public Certificate Authorities (like Let's Encrypt or DigiCert) to validate cryptographic signatures, and remote cloud identity providers (OAuth, OpenID Connect) to handle access control.
 
 However, when you sever the link to the global internet, this entire trust pipeline breaks instantly. Offline data-sharing tools like Apple AirDrop, standard Xender, or basic HTTP server modules are built on a highly flawed security assumption: that local proximity equals trust.
@@ -29,13 +30,15 @@ Every single security control—including tracking requests for rate limiting, v
 ### 1.3 Project Core Engineering Requirements
 
 The AirShare Secure Node project was built to address these specific vulnerabilities by engineering a secure, self-contained file vault. It replaces the open, unencrypted design of standard file-sharing tools with a strict Zero-Trust paradigm. The application treats every connected client device as a potential threat until it proves its identity.
-The primary technical requirements for this project include:
 
-                  ┌──► 1. Transport Layer Security (In-Memory X.509 CA Signing)
-                  ├──► 2. Local Namespace Discovery (Avahi mDNS System Engine)
-[ AirShare Core ] ├──► 3. Identity Ingress Barriers (Secure Anti-XSS Login Gates)
-                  ├──► 4. Anti-Scanning Firewalls (Sliding-Window Rate Limiting)
-                  └──► 5. System Directory Isolation (Canonical Bound Jail)
+   The primary technical requirements for this project include:
+                 
+                 ┌──► 1. Transport Layer Security (In-Memory X.509 CA Signing)
+                 ├──► 2. Local Namespace Discovery (Avahi mDNS System Engine) 
+    Airshare core├──► 3. Identity Ingress Barriers (Secure Anti-XSS Login Gates)
+                 ├──► 4. Anti-Scanning Firewalls (Sliding-Window Rate Limiting)
+                 └──► 5. System Directory Isolation (Canonical Bound Jail)
+
 1, Transport Layer Security: The tool must instantly encrypt all data over the local network using dynamically generated cryptographic keys, preventing anyone from sniffing packets over the air.
 
 2, Local Namespace Discovery: It must publish a clean, easy-to-use local domain name without internet connection, removing the need for users to type long, confusing IP addresses.
@@ -45,6 +48,21 @@ The primary technical requirements for this project include:
 
 5, System Directory Isolation: The tool must use native file system hooks to let the host pick any directory to share at runtime, securely isolating the rest of the computer's hard drive from client access.
 # 2: THREAT MODELING & DEEP ATTACK SURFACE DECONSTRUCTION
+
+### 2.1 STRIDE Threat Analysis for Local Access Points
+To properly secure the application, a formal security threat assessment was performed during the design phase using the STRIDE methodology. This analysis looks closely at how an attacker could exploit an open local hotspot network:
+
+Spoofing Identity: Attackers on an open hotspot can easily spoof their network configurations or clone legitimate session tokens to gain unauthorized access. The app fixes this by generating unique, long, and unpredictable session tokens (secrets.token_hex(16)) and locking them behind strict browser security flags.
+
+Tampering with Data: Attackers can intercept network packets to modify data mid-transit, or inject malicious path characters into URL parameters (like ?path=../../) to break out of the shared folder. The app stops this by enforcing strict path normalization boundaries on every request.
+
+Repudiation: Without system logs, a user could perform malicious actions on the server without leaving a trace. The app integrates real-time console auditing that prints detailed security logs for every connection and file action.
+
+Information Disclosure (Sniffing): This is the biggest threat on local networks. Anyone running a wireless card in monitoring mode can capture plain HTTP traffic and read files or passwords in cleartext. The app eliminates this by forcing mandatory TLS encryption (HTTPS) across all connections.
+
+Denial of Service (DoS): Attackers can flood the server with automated fuzzing tools (like GoBuster) to exhaust system resources or crash the script. The app blocks this using a stateful, memory-isolated rate limiter that drops abusive connection paths instantly.
+
+Elevation of Privilege: An unauthenticated user could attempt to bypass the login interface and access protected file downloads. The app stops this using an isolation gate that validates active session tokens before routing any protected data paths.
 
 
 
