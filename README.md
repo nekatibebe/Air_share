@@ -6,7 +6,7 @@
 
 In the design of modern file-sharing applications, engineering teams routinely offload security, access control, and identity mapping tasks to upstream infrastructure layers. When an application operates on a corporate network or across the worldwide web, it heavily relies on foundational trust assumptions built into external systems:
 
-[ Internet File App ] ──► (Public DNS Route) ──► (Let's Encrypt CA validation) ──► (OAuth Core Server)
+     [ Internet File App ] ──► (Public DNS Route) ──► (Let's Encrypt CA validation) ──► (OAuth Core Server)
 
 These external abstractions include public Domain Name System (DNS) configurations for routing verification, public Certificate Authorities (like Let's Encrypt or DigiCert) to validate cryptographic signatures, and remote cloud identity providers (OAuth, OpenID Connect) to handle access control.
 
@@ -44,6 +44,7 @@ The AirShare Secure Node project was built to address these specific vulnerabili
 2, Local Namespace Discovery: It must publish a clean, easy-to-use local domain name without internet connection, removing the need for users to type long, confusing IP addresses.
 
 3, Identity Ingress Barriers: The app must force client devices through a secure login screen, blocking unauthorized users from seeing the folder structure or files.
+
 4, Anti-Scanning Firewalls: It must feature a built-in network throttle to block automated scanning tools (like GoBuster) and automated password crackers.
 
 5, System Directory Isolation: The tool must use native file system hooks to let the host pick any directory to share at runtime, securely isolating the rest of the computer's hard drive from client access.
@@ -52,18 +53,43 @@ The AirShare Secure Node project was built to address these specific vulnerabili
 ### 2.1 STRIDE Threat Analysis for Local Access Points
 To properly secure the application, a formal security threat assessment was performed during the design phase using the STRIDE methodology. This analysis looks closely at how an attacker could exploit an open local hotspot network:
 
-Spoofing Identity: Attackers on an open hotspot can easily spoof their network configurations or clone legitimate session tokens to gain unauthorized access. The app fixes this by generating unique, long, and unpredictable session tokens (secrets.token_hex(16)) and locking them behind strict browser security flags.
+*Spoofing Identity:* Attackers on an open hotspot can easily spoof their network configurations or clone legitimate session tokens to gain unauthorized access. The app fixes this by generating unique, long, and unpredictable session tokens (secrets.token_hex(16)) and locking them behind strict browser security flags.
 
-Tampering with Data: Attackers can intercept network packets to modify data mid-transit, or inject malicious path characters into URL parameters (like ?path=../../) to break out of the shared folder. The app stops this by enforcing strict path normalization boundaries on every request.
+*Tampering with Data:* Attackers can intercept network packets to modify data mid-transit, or inject malicious path characters into URL parameters (like ?path=../../) to break out of the shared folder. The app stops this by enforcing strict path normalization boundaries on every request.
 
-Repudiation: Without system logs, a user could perform malicious actions on the server without leaving a trace. The app integrates real-time console auditing that prints detailed security logs for every connection and file action.
+*Repudiation:* Without system logs, a user could perform malicious actions on the server without leaving a trace. The app integrates real-time console auditing that prints detailed security logs for every connection and file action.
 
-Information Disclosure (Sniffing): This is the biggest threat on local networks. Anyone running a wireless card in monitoring mode can capture plain HTTP traffic and read files or passwords in cleartext. The app eliminates this by forcing mandatory TLS encryption (HTTPS) across all connections.
+*Information Disclosure (Sniffing):* This is the biggest threat on local networks. Anyone running a wireless card in monitoring mode can capture plain HTTP traffic and read files or passwords in cleartext. The app eliminates this by forcing mandatory TLS encryption (HTTPS) across all connections.
 
-Denial of Service (DoS): Attackers can flood the server with automated fuzzing tools (like GoBuster) to exhaust system resources or crash the script. The app blocks this using a stateful, memory-isolated rate limiter that drops abusive connection paths instantly.
+*Denial of Service (DoS):* Attackers can flood the server with automated fuzzing tools (like GoBuster) to exhaust system resources or crash the script. The app blocks this using a stateful, memory-isolated rate limiter that drops abusive connection paths instantly.
 
-Elevation of Privilege: An unauthenticated user could attempt to bypass the login interface and access protected file downloads. The app stops this using an isolation gate that validates active session tokens before routing any protected data paths.
+*Elevation of Privilege:* An unauthenticated user could attempt to bypass the login interface and access protected file downloads. The app stops this using an isolation gate that validates active session tokens before routing any protected data paths.
+### 2.2 Exploitation Mechanics: Cleartext Radio Sniffing & Path Breakouts
 
+Understanding the precise mechanics of a Cleartext Packet Capture Attack highlights why standard HTTP servers are highly dangerous on local networks. When a client device connects over plain HTTP, the browser packages all data—including the username, password, and files—into raw, unencrypted TCP segments.
+
+If an attacker nearby places their wireless interface card into monitor mode using standard tools like airmon-ng and launches a network capture (tcpdump or Wireshark), they can intercept these radio packets straight out of the air:
+      
+    [ Client Phone ] ─── (Plain HTTP: User=Feleke Pass=Feleke@123) ───► [ Router ]
+                                 │
+                   ⚠️ (Adversary captures cleartext waves)
+                                 │
+                                 ▼
+                     [ Wireshark Packet Dump ]
+   Because the data is completely unencrypted, the attacker can use Wireshark's "Follow TCP Stream" feature to read the exact login credentials and reconstruct copies of transferred files directly from the captured bytes.
+
+   A Directory Traversal Attack targets the server's input validation layer. If an application handles folder navigation by blindly combining path strings from the user (e.g., BASE_DIR + request.args.get('path')), an attacker can easily exploit this layout.
+
+   By typing relative directory traversal characters like ../../../../etc/passwd into the URL query parameters, they can trick the operating system's file resolver. The system processes each .. step by climbing backward out of the shared directory, allowing the attacker to break out of the sandbox and read confidential system files from anywhere on the host's hard drive.
+   ### 2.3 Attack Surface Minimization via Volatile State Memory
+
+   To achieve a hardened security posture, the project purposefully avoids using any persistent storage databases or disk-cached tracking files. If an application writes session tokens or connection logs to temporary files on the hard drive, it expands its attack surface.
+
+   An attacker who gains local user access could read those temporary files to steal active tokens, and if the server crashes unexpectedly, those session records remain on the disk as a forensic footprint.
+
+   The AirShare Secure Node minimizes this risk by storing its entire state registry inside volatile system memory (RAM). Active session tokens, sliding rate-limit timestamps, and connection states live inside Python dictionary tables (active_sessions and rate_limit_records).
+
+   Because this data is stored purely in RAM, it is completely volatile. The exact moment the server administrator terminates the script or stops the application, the operating system cleans the memory space. The session keys, logging histories, and tracking metrics evaporate instantly, leaving a zero-footprint trace on the physical disk.
 
 
 
