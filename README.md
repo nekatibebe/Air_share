@@ -1,18 +1,22 @@
-## The real world problem i face and Need of developing Secured, offline, high-speed API based file Sharing tool
-### 1,Internet dependency and High latency:
-Sharing files often requires an active internet connection leading unnecessary slow transfer speeds, and heavy data consumption.
-### 2,Storage limitation on mobile devices:
-Managing large file directory on phones with limited storage requires a seamless way to preview and access files hosted on a PC without downloading them first
-### 3, Privacy and network security risks:
-Transmitting sensitive local data over public or cloud infrastructure exposes files to third-party interception and data leakage.
-### 4, Lack of hardened local tools:
-Existing offline utilities lack built-in security features like rate-limiting, encrypted transport, and input validation, and these types of security measures.
-### 5,Data exposure over plain text protocols:
-Traditional local file transfers(e.g HTTP, FTP, or unencrypted SMB) send data in clear text, making them vulnerable to packet sniffing and man-in-middle attack on shared WIFI networks.
-## The proposed solutions for the tool
-### 1, 100% Offline peer-to-peer Networks:
-Operates over a local WIFI/Hotspot architecture without requiring active internet access.
-### 2,High-Speed Transfer rates:
+
+# 1: SYSTEM SPECIFICATION & ADVANCED PROJECT RATIONALE
+
+
+### 1.1 The Architecture of Untrusted Link-Layer Networks
+
+In the design of modern file-sharing applications, engineering teams routinely offload security, access control, and identity mapping tasks to upstream infrastructure layers. When an application operates on a corporate network or across the worldwide web, it heavily relies on foundational trust assumptions built into external systems:
+
+[ Internet File App ] ──► (Public DNS Route) ──► (Let's Encrypt CA validation) ──► (OAuth Core Server)
+These external abstractions include public Domain Name System (DNS) configurations for routing verification, public Certificate Authorities (like Let's Encrypt or DigiCert) to validate cryptographic signatures, and remote cloud identity providers (OAuth, OpenID Connect) to handle access control.
+
+However, when you sever the link to the global internet, this entire trust pipeline breaks instantly. Offline data-sharing tools like Apple AirDrop, standard Xender, or basic HTTP server modules are built on a highly flawed security assumption: that local proximity equals trust.
+
+Because these tools are physically limited to an offline Local Area Network (LAN) or a mobile hotspot radio footprint, developers often optimize them for convenience, skipping authentication and encryption layers entirely.
+
+From an adversary's perspective, this creates an ideal exploit environment. The moment a wireless hardware chip transitions into an open Access Point (AP), it establishes a flat, non-isolated Layer 2 broadcast domain. Any network card within wireless propagation range can connect to the radio bands.
+
+Without encryption, all data packets travel through the air as cleartext radio waves. Anyone running a passive monitor tool can capture files, intercept configuration arguments, and harvest active session data straight out of the air.
+### 1.2 Architectural Constraints of Zero-Internet Environments
 <img width="1062" height="1131" alt="Screenshot_20261007_211516_Chrome" src="https://github.com/user-attachments/assets/d65173a8-1d9b-47bd-a0a4-ab3684e75f0d" />
 
 Achieves rapid local transfer speeds ranging from 5MB/S to 8MB/S, eliminating internet latency and bandwidth costs.
