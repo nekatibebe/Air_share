@@ -19,9 +19,13 @@ Achieves rapid local transfer speeds ranging from 5MB/S to 8MB/S, eliminating in
 ### 3, RSA-Based Encrypted Tunneling:
 Utilizes RSA asymmetric encryption primitives to establish a secure, encrypted communication channel between host and clients.
 ### 4, Automated PKI and CA certificate Generation:
+<img width="1528" height="42" alt="image" src="https://github.com/user-attachments/assets/0e9fe2b4-57f6-44d2-99fe-99208545c1ad" />
+
 Programmatically generates on-the-fly CA Certificates and TLS keys, automatically configuring secure HTTPS connections for connected clients.
 ## Defensive security pillars and system Hardening
 ### 1, Zero-configuration mDNS Resolution:
+<img width="754" height="68" alt="Screenshot_2026-10-07_21-09-32" src="https://github.com/user-attachments/assets/10e1c8a8-a354-4fc5-aefd-cf7a1497e63e" />
+
 Integrated mDNS/Avahi naming allowing clients to connect
 via friendly hostnames(e.g .local domain) instead of typing new ip addresses.
 ### 2, IP based Sliding window rate limiter: 
