@@ -150,6 +150,23 @@ The selected folder string is locked into a global constant variable (BASE_DIR),
                                │
                                ▼
     [ Generate Server ]  ──► Compiles server_key (2048-bit) ──► Signed by Root CA ──► TLS Active
+*The Root Certificate Authority (CA):* The script checks if a persistent local CA already exists. If missing, it generates a high-strength 4096-bit RSA Private Key and a root master certificate (ca.pem). This root certificate acts as your own personal offline trust authority.
+
+ *The Server Certificate:* The script then creates a separate 2048-bit RSA Private Key for the active web server. It builds a downstream server certificate and signs it using the Root CA's master private key.
+
+ This setup allows you to install your small ca.pem certificate onto a client device just once. From then on, the phone will seamlessly trust your file-sharing server without displaying any browser security warnings.
+ ### 4.2 X.509 Certificate Structures & Cryptographic Assertions
+ Building valid certificates offline requires configuring precise cryptographic properties inside the generate_self_signed_cert() function. When creating the Root CA, the script uses a CertificateBuilder pipeline to define critical properties:
+
+    python
+    .add_extension(x509.BasicConstraints(ca=True, path_length=None), critical=True)
+ Setting ca=True marks this certificate as an official, authoritative Certificate Authority that is allowed to sign downstream certificates. The script also configures explicit Key Usage flags to define what the certificate can be used for:
+
+       python
+    x509.KeyUsage(digital_signature=True, key_cert_sign=True, crl_sign=True, ...)
+ Setting key_cert_sign=True gives the CA permission to sign server certificates, while crl_sign=True allows it to sign certificate revocation lists.
+
+ The Root CA's validity dates are set to a 10-year window (days=3650), while the downstream server certificate is set to a 1-year expiration window (days=365). Finally, the certificates are signed using a secure SHA-256 cryptographic hash.
 
 
 
