@@ -90,6 +90,22 @@ If an attacker nearby places their wireless interface card into monitor mode usi
    The AirShare Secure Node minimizes this risk by storing its entire state registry inside volatile system memory (RAM). Active session tokens, sliding rate-limit timestamps, and connection states live inside Python dictionary tables (active_sessions and rate_limit_records).
 
    Because this data is stored purely in RAM, it is completely volatile. The exact moment the server administrator terminates the script or stops the application, the operating system cleans the memory space. The session keys, logging histories, and tracking metrics evaporate instantly, leaving a zero-footprint trace on the physical disk.
+   # 3: HARDWARE INTERFACING & LOCAL NETWORKING PRIMITIVES
+
+   ### 3.1 Layer 2 Broadcast Domains and Virtual Interface Binding
+
+   When your Linux desktop initializes a mobile hotspot or a local wireless network, the operating system's networking subsystem creates a dedicated virtual wireless interface card (typically labeled wlan0, ap0, or wlo1).
+
+   The Linux kernel link-layer driver configures this interface to act as a Wireless Access Point (AP), broadcasting beacons that allow client devices to discover and connect to the radio band.
+
+                      ┌──► Virtual Interface 'ap0' (Assigned IP 192.168.137.1)
+                      ├──► DHCP Server (Hands out IPs 192.168.137.10 - 50)
+    [ Kali Linux AP ] ├──► Local DNS Gateway (Maps local requests)
+                      └──► Socket Listener (Binds to 0.0.0.0:9090)
+
+  Once a client phone connects to this network, a local DHCP daemon (like dnsmasq or NetworkManager's internal routing hooks) automatically assigns it an IP address within a local subnet range (typically 192.168.137.x or 10.42.0.x). This sets up an isolated local network where your laptop sits at the center, acting as the primary gateway and authoritative router.
+
+  ### 3.2 Socket Descriptors, Wildcard Binding (0.0.0.0), and OS VFS Interfacing
 
 
 
