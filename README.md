@@ -301,8 +301,64 @@ By adding a standard Linux interpreter directive (shebang line) as the very firs
 
  To complete the system integration on your Kali Linux machine, execute this setup sequence in your terminal to move the script into your system's binary folder:
 
+      bash
+    # 1. Copy the script into your system's binary directory path map
+     sudo cp app.py /usr/local/bin/airshare
 
+     # 2. Grant global execution clearance
+     sudo chmod +x /usr/local/bin/airshare
+Once you grant global executable permissions via chmod +x, the shell environment instantly registers the command name across all user terminal contexts using the system's internal $PATH environment mapping array.
 
+You can now open a terminal window anywhere on your machine, drop into any folder you want, and launch the file vault instantly simply by typing a single word:
+
+          bash
+     airshare
+This seamless CLI integration completely decouples your project deployment from software IDE environments, delivering a polished, professional command-line utility.
+# 8: USER INTERFACE WORKFLOW & CLIENT WEB LAYOUTS
+### 8.1 Host Telemetry Console Design
+
+When you type the airshare command in your terminal, the application initializes your network configurations and prints a clean, easy-to-read administration pane directly inside the terminal window.
+
+       text
+    ✅ [mDNS] Published airshare.local on the local network.
+
+     === To avoid browser TLS warnings, install the generated CA certificate on client machines: ===
+    CA file: /home/feleke/ca.pem
+ 
+    👉 Target Connection: https://airshare.local:9090
+    👉 IP connection: https://10.161.169.228:9090
+    ====================================================================
+This console serves as a live monitoring dashboard. It prints out your active connection links, lists step-by-step instructions for installing the local CA certificate, and displays real-time security alerts (like blocked directory traversal attempts and rate-limit triggers) for the server administrator.
+### 8.2 Mobile-Responsive HTML5 App-Style Matrix
+
+When a client device connects to your hotspot and opens the secure link, the server serves a clean, lightweight, responsive dashboard layout styled with modern CSS parameters optimized for mobile screens.
+
+       ┌────────────────────────────────────────┐
+       │ ⚠️ Terminate Session (Logout)          │
+       │ 🛡️ Secure Vault Active                 │
+       │ Path: /Downloads/Assignment1           │
+       ├────────────────────────────────────────┤
+       │ ┌────────────────────────────────────┐ │
+       │ │ 📁 Upload File Securely            │ │
+       │ │ [ Choose File ]                    │ │
+       │ │ [ Upload to Current Subdirectory ] │ │
+       │ └────────────────────────────────────┘ │
+       │                                        │
+       │ Contents                               │
+       │ 📁 LabReports/                  Folder │
+       │ 📄 final_grades.xlsx  [Open] [Download]│
+       │ 📄 token_key.bin      [Open] [Download]│
+       └────────────────────────────────────────┘
+  The client workflow follows a clean, intuitive layout:
+
+*The Login Gate:*  Unverified users are greeted by a secure login card. All internal routes are completely locked until valid administrative credentials match.
+
+*The Folder Explorer Tree:*  Subfolders are displayed at the top of the content list with folder icons 📁. Tapping into a folder updates the query parameter string (/?path=folder/), allowing recursive navigation into subdirectories. A "⬅️ Back" button handles backward path rendering.
+Dual Resource Action Controls:Each file item features two distinct options:
+#### Open:
+Uses matching system MIME types to display immediate previews (like rendering images or reading text files) natively within a new browser tab.
+#### Download:
+Streams the data out as a secure attachment file flow, forcing the browser to initiate a native save dialog.
 
 
 
