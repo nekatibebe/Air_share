@@ -1,5 +1,5 @@
 
-# 1: SYSTEM SPECIFICATION & ADVANCED PROJECT RATIONALE
+# 1 SYSTEM SPECIFICATION & ADVANCED PROJECT RATIONALE
 
 
 ### 1.1 The Architecture of Untrusted Link-Layer Networks
@@ -48,7 +48,7 @@ The AirShare Secure Node project was built to address these specific vulnerabili
 4, Anti-Scanning Firewalls: It must feature a built-in network throttle to block automated scanning tools (like GoBuster) and automated password crackers.
 
 5, System Directory Isolation: The tool must use native file system hooks to let the host pick any directory to share at runtime, securely isolating the rest of the computer's hard drive from client access.
-# 2: THREAT MODELING & DEEP ATTACK SURFACE DECONSTRUCTION
+# 2 THREAT MODELING & DEEP ATTACK SURFACE DECONSTRUCTION
 
 ### 2.1 STRIDE Threat Analysis for Local Access Points
 To properly secure the application, a formal security threat assessment was performed during the design phase using the STRIDE methodology. This analysis looks closely at how an attacker could exploit an open local hotspot network:
@@ -90,7 +90,7 @@ If an attacker nearby places their wireless interface card into monitor mode usi
    The AirShare Secure Node minimizes this risk by storing its entire state registry inside volatile system memory (RAM). Active session tokens, sliding rate-limit timestamps, and connection states live inside Python dictionary tables (active_sessions and rate_limit_records).
 
    Because this data is stored purely in RAM, it is completely volatile. The exact moment the server administrator terminates the script or stops the application, the operating system cleans the memory space. The session keys, logging histories, and tracking metrics evaporate instantly, leaving a zero-footprint trace on the physical disk.
-   # 3: HARDWARE INTERFACING & LOCAL NETWORKING PRIMITIVES
+   # 3 HARDWARE INTERFACING & LOCAL NETWORKING PRIMITIVES
 
    ### 3.1 Layer 2 Broadcast Domains and Virtual Interface Binding
 
@@ -137,7 +137,7 @@ The selected folder string is locked into a global constant variable (BASE_DIR),
  Once verified, publish_local_hostname() spins up the avahi-publish-address process. This background daemon answers local network discoveries by broadcasting UDP packets across port 5353.
 
  When a phone browser asks, "Who owns the domain airshare.local?", your laptop's Avahi service intercepts the multicast packet and responds, "That domain belongs to my wireless card IP address." This allows users to connect to your file portal completely offline simply by typing https://airshare.local:9090 into their browsers.
- # 4: CRYPTOGRAPHIC ENGINEERING & PRIVATE CA ARCHITECTURE
+ # 4 CRYPTOGRAPHIC ENGINEERING & PRIVATE CA ARCHITECTURE
  ### 4.1 Dual-Tier In-Memory Public Key Infrastructure (PKI)
 
  The core transport security of this project uses a custom, local Public Key Infrastructure (PKI) built directly into the initialization block using the Python cryptography library.
@@ -183,7 +183,7 @@ A common reason browsers reject local certificates is a mismatch between the dom
 The script uses the get_local_ip() function to automatically resolve your current wireless interface IP address, converts it into a valid IP identity object, and appends it directly to the certificate's SAN array.
 
 It also adds airshare.local and localhost to the list. When a phone connects via mDNS or via the raw local IP, its browser checks this certificate array, finds a matching entry, and validates the encrypted TLS connection seamlessly.
- # 5: THE PRODUCTION API CONTRACT & ROUTING LOGIC
+ # 5 THE PRODUCTION API CONTRACT & ROUTING LOGIC
  ### 5.1 Programmatic REST Endpoints & Privilege Boundaries
 
  The application operates as a programmatic, stateless REST API interface. It establishes clear service definitions that separate public, unauthenticated routes from protected, high-security storage areas:
@@ -215,7 +215,7 @@ This data pipe processes the file payload smoothly without consuming excessive s
        mime, _ = mimetypes.guess_type(target_file)
     return send_from_directory(..., mimetype=mime)
 The script resolves the file's exact media type (e.g., image/jpeg or application/pdf) and injects it straight into the HTTP response header. This explicit MIME header tells the phone browser exactly how to process the data, allowing it to render the file natively inside a new browser tab instead of forcing a download.
-# 6: APP-LAYER DEFENSIVE ENGINEERING & THROTTLING ALGORITHMS
+# 6 APP-LAYER DEFENSIVE ENGINEERING & THROTTLING ALGORITHMS
 ### 6.1 Sliding-Window Memory-Isolated Rate Limiting Mechanics
 
 To protect the server from automated fuzzers (like GoBuster) or password brute-forcers, the application uses an inline Sliding-Window Rate Limiting algorithm built directly into the python script. This custom engine uses a rolling memory table to track requests in real time without needing complex third-party extensions:
@@ -280,7 +280,7 @@ This function intercepts filename strings and translates special characters into
      • > becomes &gt;
      • & becomes &amp;
 When the phone browser loads the file index dashboard, it treats the escaped string purely as harmless text metadata instead of executable code, completely blocking Cross-Site Scripting exploits.
-# 7: SYSTEM INTEGRATION & LINUX DEPLOYMENT BLUEPRINT
+# 7 SYSTEM INTEGRATION & LINUX DEPLOYMENT BLUEPRINT
 ### 7.1 Linux Filesystem Hierarchy Standard (FHS) Mapping
 
 To transform your standalone app.py script into a native, globally accessible system utility like nmap or wireshark, the application is configured to align with the standard Linux Filesystem Hierarchy Standard (FHS).
@@ -314,7 +314,7 @@ You can now open a terminal window anywhere on your machine, drop into any folde
           bash
      airshare
 This seamless CLI integration completely decouples your project deployment from software IDE environments, delivering a polished, professional command-line utility.
-# 8: USER INTERFACE WORKFLOW & CLIENT WEB LAYOUTS
+# 8 USER INTERFACE WORKFLOW & CLIENT WEB LAYOUTS
 ### 8.1 Host Telemetry Console Design
 
 When you type the airshare command in your terminal, the application initializes your network configurations and prints a clean, easy-to-read administration pane directly inside the terminal window.
@@ -360,7 +360,7 @@ Uses matching system MIME types to display immediate previews (like rendering im
 #### Download:
 Streams the data out as a secure attachment file flow, forcing the browser to initiate a native save dialog.
 
-# 9: EXPERIMENTAL EVALUATION & ADVERSARIAL SIMULATION LOGS
+# 9 EXPERIMENTAL EVALUATION & ADVERSARIAL SIMULATION LOGS
 ### 9.1 Testbed Setup and Lab Configurations
 
 To validate the application's defensive security posture, the project was deployed inside an isolated wireless testbed environment. A host computer running Kali Linux created an open wireless hotspot access point network interface.
@@ -388,7 +388,7 @@ A secondary client machine running automated penetration testing tools joined th
 
        text
      [ALERT] PATH TRAVERSAL ATTEMPT BLOCKED: Client tried escaping to /etc/shadow
-# 10: ARCHITECTURAL TRADE-OFFS, COMPLIANCE, & CONCLUSION
+# 10 ARCHITECTURAL TRADE-OFFS, COMPLIANCE, & CONCLUSION
 ### 10.1 Key Engineering Design Trade-offs
 
 Engineering standard applications requires balancing security, usability, and architecture constraints. When designing an offline, high-security utility, these trade-offs become critical architectural choices:
