@@ -106,7 +106,26 @@ If an attacker nearby places their wireless interface card into monitor mode usi
   Once a client phone connects to this network, a local DHCP daemon (like dnsmasq or NetworkManager's internal routing hooks) automatically assigns it an IP address within a local subnet range (typically 192.168.137.x or 10.42.0.x). This sets up an isolated local network where your laptop sits at the center, acting as the primary gateway and authoritative router.
 
   ### 3.2 Socket Descriptors, Wildcard Binding (0.0.0.0), and OS VFS Interfacing
+ 
+  To capture network traffic across this custom wireless interface, the Flask web framework uses an underlying network socket descriptor configured for wildcard binding:
+  
+     python
+     app.run(host='0.0.0.0', port=9090)
 
+Binding to the wildcard address 0.0.0.0 tells the operating system's network stack: "Do not restrict incoming connections to just one hardware interface. Open port 9090 and listen for incoming traffic on every single network card inside this machine."
+
+This setup allows the app to simultaneously catch traffic coming from local loops (127.0.0.1), physical Ethernet cables, and the virtual hotspot interface card.
+
+To bridge this web server to your computer's filesystem safely and dynamically, the app integrates with the operating system's Virtual File System (VFS) using a graphical UI window. When the script boots, it calls Python's native tkinter library:
+             
+     python
+    root = tk.Tk()
+    root.withdraw()
+    BASE_DIR = filedialog.askdirectory()
+The root.withdraw() line hides the tiny default Tkinter background window, while filedialog.askdirectory() opens a native desktop directory picker. This window hooks straight into the OS kernel, allowing the administrator to click and pick any folder on their drive.
+
+The selected folder string is locked into a global constant variable (BASE_DIR), which acts as the absolute sandbox root boundary for all future file actions.
+ ### 3.3 Multicast DNS (mDNS) & Local Hostname Publishing Mechanics
 
 
 
