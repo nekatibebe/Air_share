@@ -19,7 +19,7 @@ From an adversary's perspective, this creates an ideal exploit environment. The 
 Without encryption, all data packets travel through the air as cleartext radio waves. Anyone running a passive monitor tool can capture files, intercept configuration arguments, and harvest active session data straight out of the air.
 ### 1.2 Architectural Constraints of Zero-Internet Environments
 
-Building a secure tool under strict zero-internet constraints changes how you write software. You can no longer make simple API calls to third-party web services or rely on external packages that fetch updates over the net.
+Building a secure tool under strict zero-internet constraints changes how you write software. You can no longer make simple API calls to third-party web services or rely on external packages that fetch updates over the network.
 
 The application must be completely self-sufficient. This constraint means your code cannot connect to cloud engines to process user profiles, meaning authentication states must be generated and managed directly on the local machine.
 
@@ -123,6 +123,7 @@ To bridge this web server to your computer's filesystem safely and dynamically, 
     root.withdraw()
     BASE_DIR = filedialog.askdirectory()
 The root.withdraw() line hides the tiny default Tkinter background window, while filedialog.askdirectory() opens a native desktop directory picker. This window hooks straight into the OS kernel, allowing the administrator to click and pick any folder on their drive.
+ <img width="996" height="316" alt="image" src="https://github.com/user-attachments/assets/f0235f47-b8c0-4e9f-a4ff-b484c9761125" />
 
 The selected folder string is locked into a global constant variable (BASE_DIR), which acts as the absolute sandbox root boundary for all future file actions.
  ### 3.3 Multicast DNS (mDNS) & Local Hostname Publishing Mechanics
@@ -192,9 +193,9 @@ It also adds airshare.local and localhost to the list. When a phone connects via
                          │                            POST /login (Verify & Set Cookie)
      [ Web Traffic ] ────┤
                          └──► Protected Endpoints ──► GET / (Inventory Map)
-                         (verify_session=True)   POST /upload (Binary Upload Pipe)
-                                                 GET /view/<file> (Inline View)
-                                                 GET /download/<file> (Forced Download)
+                         (verify_session=True)        POST /upload (Binary Upload Pipe)
+                                                      GET /view/<file> (Inline View)
+                                                      GET /download/<file> (Forced Download)
  The app handles this access control by checking user credentials at the root gateway. Unverified users can only load the /login endpoints.
 
  Once they submit valid credentials, the server generates a high-entropy session ID string (secrets.token_hex(16)) and stores it in the active session table. Protected endpoints require a valid session cookie; if missing or invalid, the server immediately redirects the traffic back to the login barrier.
@@ -325,41 +326,29 @@ When you type the airshare command in your terminal, the application initializes
      === To avoid browser TLS warnings, install the generated CA certificate on client machines: ===
     CA file: /home/feleke/ca.pem
  
-    👉 Target Connection: https://airshare.local:9090
-    👉 IP connection: https://10.161.169.228:9090
-    ====================================================================
+<img width="1726" height="236" alt="image" src="https://github.com/user-attachments/assets/2495f7c8-9494-450f-86ba-a66b44006583" />
+
 This console serves as a live monitoring dashboard. It prints out your active connection links, lists step-by-step instructions for installing the local CA certificate, and displays real-time security alerts (like blocked directory traversal attempts and rate-limit triggers) for the server administrator.
 ### 8.2 Mobile-Responsive HTML5 App-Style Matrix
 
-When a client device connects to your hotspot and opens the secure link, the server serves a clean, lightweight, responsive dashboard layout styled with modern CSS parameters optimized for mobile screens.
+When a client device connects to your hotspot and opens the secure link, the server serves a clean, lightweight, responsive dashboard layout styled with modern CSS parameters optimized for mobile screens which asks the client username and password.
+ 
+If it fulfills the credential correctly it gets the session id and enters the next page which the client can access(download, upload and open) the files inside assigned folder by the sender
 
-       ┌────────────────────────────────────────┐
-       │ ⚠️ Terminate Session (Logout)          │
-       │ 🛡️ Secure Vault Active                 │
-       │ Path: /Downloads/Assignment1           │
-       ├────────────────────────────────────────┤
-       │ ┌────────────────────────────────────┐ │
-       │ │ 📁 Upload File Securely            │ │
-       │ │ [ Choose File ]                    │ │
-       │ │ [ Upload to Current Subdirectory ] │ │
-       │ └────────────────────────────────────┘ │
-       │                                        │
-       │ Contents                               │
-       │ 📁 LabReports/                  Folder │
-       │ 📄 final_grades.xlsx  [Open] [Download]│
-       │ 📄 token_key.bin      [Open] [Download]│
-       └────────────────────────────────────────┘
   The client workflow follows a clean, intuitive layout:
 
 *The Login Gate:*  Unverified users are greeted by a secure login card. All internal routes are completely locked until valid administrative credentials match.
-
+  <img width="1079" height="935" alt="Screenshot_20261017_100937_Chrome" src="https://github.com/user-attachments/assets/0f672f10-fcf9-4566-8581-8836a6f770f2" />
 *The Folder Explorer Tree:*  Subfolders are displayed at the top of the content list with folder icons 📁. Tapping into a folder updates the query parameter string (/?path=folder/), allowing recursive navigation into subdirectories. A "⬅️ Back" button handles backward path rendering.
+<img width="1079" height="2193" alt="Screenshot_20261017_103223_Chrome" src="https://github.com/user-attachments/assets/e6d9489e-53e8-46c2-a7d7-c30020c5ff07" />
+
 Dual Resource Action Controls:Each file item features two distinct options:
 #### Open:
-Uses matching system MIME types to display immediate previews (like rendering images or reading text files) natively within a new browser tab.
+Uses matching system MIME types to display immediate previews (like rendering images, reading text files and watching videos) natively within a new browser tab.
 #### Download:
 Streams the data out as a secure attachment file flow, forcing the browser to initiate a native save dialog.
-
+#### Upload:
+In addition to this the client can send filtered files to the host
 # 9 EXPERIMENTAL EVALUATION & ADVERSARIAL SIMULATION LOGS
 ### 9.1 Testbed Setup and Lab Configurations
 
@@ -386,8 +375,8 @@ A secondary client machine running automated penetration testing tools joined th
     curl -k "https://airshare.local:9090"
  *System Behavioral Response:*  The application's input validation layer intercepted the path sequence. The secure_target_path() function calculated the absolute normalization string, detected that it escaped the BASE_DIR root boundary, and dropped the request instantly with an HTTP 403 Forbidden error.The host console printed a real-time security warning alert detailing the attack metadata:
 
-       text
-     [ALERT] PATH TRAVERSAL ATTEMPT BLOCKED: Client tried escaping to /etc/shadow
+<img width="1166" height="62" alt="image" src="https://github.com/user-attachments/assets/42ba76cf-0c51-43b2-bcc3-1f94f5136efe" />
+
 # 10 ARCHITECTURAL TRADE-OFFS, COMPLIANCE, & CONCLUSION
 ### 10.1 Key Engineering Design Trade-offs
 
