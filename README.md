@@ -391,9 +391,19 @@ Engineering standard applications requires balancing security, usability, and ar
 This setup ensures that when a client device uploads a file, the browser parses the response as an inline script, pops up a native success alert window, and instantly redirects the user back to the active folder directory view.
 
 ### 10.2 Future Iterations & Final Summary
+ #### making it more user-friendly
+ instead of typing link in the browser i want to make it redirect to the login page when the client gets connected in the network.
+ 
+ #### Dynamic user Management and secure Auth:
+Replace static credentials with a full sign-up/sign-in user registration system, storing hashed
+passwords securely in a database(e.g., SQLite/PostgreSQL with bcrypt).
 
-The AirShare Secure Node capstone project successfully demonstrates that advanced web application security principles can be integrated into a portable, lightweight utility optimized for offline deployment. By building structural cryptography, stateful request throttling, and robust input validation filters directly into the core Python code, this tool delivers a reliable, secure alternative for local file delivery.
+#### Mesh Network Topology:
+transition from a single Hotspot/Access Point model to a peer-to-peer Mesh Topology, extending file-sharing
+coverage across unlimited geographical distances
+through multi-hop node relaying.
 
-Future versions of this tool could expand its functionality by integrating an AES-256-GCM encryption layer to encrypt files natively on the disk before they travel over the air, or adding a Dynamic QR Code Generator to the terminal console to allow clients to scan and open connection strings instantly.
-
-The completed project successfully complies with standard security requirements and provides a reliable foundation for secure local area data-sharing utilities.
+### MIME/Byte-Level File Inspection:
+Upgrade upload verification by inspecting raw file magic bytes (Header Signatures) instead
+of relying on basic file extensions, blocking malicious payload uploads(e.g., double-extension
+bypass or executable masking)
