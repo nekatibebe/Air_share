@@ -391,18 +391,18 @@ Engineering standard applications requires balancing security, usability, and ar
 This setup ensures that when a client device uploads a file, the browser parses the response as an inline script, pops up a native success alert window, and instantly redirects the user back to the active folder directory view.
 ### 10.2 Target use cases:Who needs this Tool?
 
-*Healthcare institutions and Hospitals:* Enables doctors, radiologists, and administrative staff
+*1, Healthcare institutions and Hospitals:* Enables doctors, radiologists, and administrative staff
 to securely and medical imaging files(e.g X-rays, MRI scans) across departments
 without sending data over external networks.
 
-*Banking and Financial Institutions:* Facilitates high-security inter-office document sharing between
+*2, Banking and Financial Institutions:* Facilitates high-security inter-office document sharing between
 teller desks and management terminals while maintaining zero exposure to public cloud leaks or internet-based
 sniffing.
 
-*Corporate Office Networks:* allows inter-office computer to computer file exchange without overloading office
+*3, Corporate Office Networks:* allows inter-office computer to computer file exchange without overloading office
 internet bandwidth, ensuring business documents remain strictly within local office premises.
 
-*Air-Gapped and High-security Environments(e.g military comand posts, hospital MRI labs, banking
+*4, Air-Gapped and High-security Environments(e.g military comand posts, hospital MRI labs, banking
 vault):* provides secure, offline file transfer for organization-critical operations where external internet connections
 are restricted for compliance and privacy.
 ### 10.3 Future Iterations & Final Summary
